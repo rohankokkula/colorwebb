@@ -45,4 +45,5 @@ if url:
         colors.update(extract_external_styles(url))
         st.write('Color Palette:')
         for color in colors:
-            st.write(color)
+            color_box = f'<div style="display:inline-block; width: 50px; height: 50px; background: {color};"></div>'
+            st.markdown(color_box, unsafe_allow_html=True)
