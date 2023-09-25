@@ -3,14 +3,36 @@ import requests
 from bs4 import BeautifulSoup
 import re
 
-def extract_colors(url):
+def extract_inline_and_internal_styles(url):
     response = requests.get(url)
     soup = BeautifulSoup(response.text, 'html.parser')
-    style_tags = soup.find_all('style')
     color_set = set()
-    for tag in style_tags:
-        colors = re.findall(r'#[0-9a-fA-F]{6}|rgba?\(\s*\d+\s*,\s*\d+\s*,\s*\d+\s*(?:,\s*[\d.]+)?\)|\b\w+\b', tag.string)
-        color_set.update(colors)
+
+    # Extracting colors from style tags
+    for style_tag in soup.find_all('style'):
+        color_set.update(re.findall(r'#[0-9a-fA-F]{6}|rgba?\(\d+,\d+,\d+(?:,[\d.]+)?\)', style_tag.string or ""))
+
+    # Extracting colors from inline styles
+    for element in soup.find_all(style=True):
+        color_set.update(re.findall(r'#[0-9a-fA-F]{6}|rgba?\(\d+,\d+,\d+(?:,[\d.]+)?\)', element['style']))
+
+    return color_set
+
+def extract_external_styles(url):
+    response = requests.get(url)
+    soup = BeautifulSoup(response.text, 'html.parser')
+    color_set = set()
+
+    # Extracting colors from external stylesheets
+    for link_tag in soup.find_all('link', {'rel': 'stylesheet'}):
+        href = link_tag.get('href')
+        if href:
+            if not href.startswith('http'):
+                import urllib.parse
+                href = urllib.parse.urljoin(url, href)
+            stylesheet_content = requests.get(href).text
+            color_set.update(re.findall(r'#[0-9a-fA-F]{6}|rgba?\(\d+,\d+,\d+(?:,[\d.]+)?\)', stylesheet_content))
+    
     return color_set
 
 st.title('Website Color Palette Extractor')
@@ -18,6 +40,9 @@ st.title('Website Color Palette Extractor')
 url = st.text_input('Enter Website URL:')
 if url:
     if st.button('Extract Colors'):
-        colors = extract_colors(url)
+        colors = set()
+        colors.update(extract_inline_and_internal_styles(url))
+        colors.update(extract_external_styles(url))
         st.write('Color Palette:')
-        st.write(colors)
+        for color in colors:
+            st.write(color)
