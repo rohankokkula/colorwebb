@@ -103,7 +103,7 @@ if url:
             for color, count in sorted_colors:
                 color_box = f'''
     <div style="flex: 1 1 calc(25% - 10px); margin: 5px; cursor: pointer;" onclick="navigator.clipboard.writeText('{color}')">
-        <div style="width: 100%; height: 100px; background: {color}; border-radius: 8px;"></div>
+        <div style="width: 100%; height: 100px; background: {color}; border-radius: 8px 8px 0px 0px;"></div>
         <div style="width: 100%; background: #fff; color: #000; font-size: 12px; text-align: center; border-radius: 0px 0px 8px 8px;">{color} ({count})</div>
     </div>'''
 
