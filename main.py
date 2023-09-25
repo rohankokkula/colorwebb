@@ -61,6 +61,7 @@ def extract_external_styles(url):
 st.title('Website Color Palette Extractor')
 
 url = st.text_input('Enter Website URL:')
+
 if url:
     if st.button('Extract Colors'):
         color_counter_internal = extract_inline_and_internal_styles(url)
@@ -77,7 +78,10 @@ if url:
             wrapper_end = '</div>'
             color_boxes = []
             
-            for color, count in color_counter.items():
+            # Sort the color_counter dictionary by frequency (values), in descending order.
+            sorted_colors = sorted(color_counter.items(), key=lambda x: x[1], reverse=True)
+            
+            for color, count in sorted_colors:
                 color_box = f'<div style="flex: 1 1 calc(25% - 10px); margin: 5px; background: {color}; text-align: center;">' \
                             f'<div style="width: 100%; height: 100px;"></div>' \
                             f'<div style="width: 100%; background: #fff; color: #000; font-size: 12px;">{color} ({count})</div>' \
