@@ -81,34 +81,37 @@ def identify_primary_secondary_colors(color_counter):
 st.title('Website Color Palette Extractor')
 
 url = st.text_input('Enter Website URL:')
+
+
+def render_color_palette(color_counter):
+    st.write('Color Palette:')
+    wrapper_start = '<div style="display: flex; flex-wrap: wrap;">'
+    wrapper_end = '</div>'
+    color_boxes = []
+    # Sort the color_counter dictionary by frequency (values), in descending order.
+    sorted_colors = sorted(color_counter.items(), key=lambda x: x[1], reverse=True)
+
+    for color, count in sorted_colors:
+        color_box = f'''
+            <div style="flex: 1 1 calc(25% - 10px); margin: 5px; cursor: pointer;" onclick="navigator.clipboard.writeText('{color}')">
+                <div style="width: 100%; height: 100px; background: {color};"></div>
+                <div style="width: 100%; background: #fff; color: #000; font-size: 12px; text-align: center;">{color} ({count})</div>
+            </div>'''
+        color_boxes.append(color_box)
+
+    wrapped_color_boxes = wrapper_start + ''.join(color_boxes) + wrapper_end
+    st.markdown(wrapped_color_boxes, unsafe_allow_html=True)
+
+
 if url:
     if st.button('Extract Colors'):
         color_counter_internal = extract_inline_and_internal_styles(url)
         color_counter_external = extract_external_styles(url)
 
+        # Combine the internal and external color counters
         color_counter = color_counter_internal
         for color, count in color_counter_external.items():
             color_counter[color] += count
 
         if color_counter:
-            primary, secondary, tertiary = identify_primary_secondary_colors(color_counter)
-            st.write(f'Primary Color: {primary}')
-            st.write(f'Secondary Colors: {", ".join(secondary) if secondary else "None"}')
-            st.write(f'Tertiary Colors: {", ".join(tertiary) if tertiary else "None"}')
-
-            wrapper_start = '<div style="display: flex; flex-wrap: wrap;">'
-            wrapper_end = '</div>'
-            color_boxes = []
-
-            sorted_colors = sorted(color_counter.items(), key=lambda x: x[1], reverse=True)
-            
-            for color, count in sorted_colors:
-                color_box = f'''
-                    <div style="flex: 1 1 calc(25% - 10px); margin: 5px; cursor: pointer;" onclick="navigator.clipboard.writeText('{color}')">
-                        <div style="width: 100%; height: 100px; background: {color};"></div>
-                        <div style="width: 100%; background: #fff; color: #000; font-size: 12px; text-align: center;">{color} ({count})</div>
-                    </div>'''
-                color_boxes.append(color_box)
-
-            wrapped_color_boxes = wrapper_start + ''.join(color_boxes) + wrapper_end
-            st.markdown(wrapped_color_boxes, unsafe_allow_html=True)
+            render_color_palette(color_counter)
