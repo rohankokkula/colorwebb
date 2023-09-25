@@ -80,7 +80,7 @@ def identify_primary_secondary_colors(color_counter):
 
 st.title('Website Color Palette Extractor')
 
-url = st.text_input('Enter Website URL:')
+url = st.text_input('Enter Website URL:', key='url_input')
 
 
 def render_color_palette(color_counter):
@@ -104,7 +104,7 @@ def render_color_palette(color_counter):
 
 
 if url:
-    if st.button('Extract Colors'):
+    if st.button('Extract Colors',  key='extract_button'):
         color_counter_internal = extract_inline_and_internal_styles(url)
         color_counter_external = extract_external_styles(url)
 
