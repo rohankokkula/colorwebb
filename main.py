@@ -63,16 +63,24 @@ def extract_external_styles(url):
 st.title('Website Color Palette Extractor')
 
 url = st.text_input('Enter Website URL:')
-
 if url:
     if st.button('Extract Colors'):
         colors = set()
         colors.update(extract_inline_and_internal_styles(url))
         colors.update(extract_external_styles(url))
-        st.write('Color Palette:')
-        for color in colors:
-            color_box = f'<div style="display:inline-block; width: 50px; height: 50px; background: {color}; text-align: center; ">' \
-                        f'<div style="width: 100%; height: 100%;"></div>' \
-                        f'<div style="width: 100%; background: #fff; color: #000; font-size: 10px;">{color}</div>' \
-                        f'</div>'
-            st.markdown(color_box, unsafe_allow_html=True)
+        
+        if colors:
+            st.write('Color Palette:')
+            wrapper_start = '<div style="display: flex; flex-wrap: wrap;">'
+            wrapper_end = '</div>'
+            color_boxes = []
+            
+            for color in colors:
+                color_box = f'<div style="flex: 1 1 calc(25% - 10px); margin: 5px; background: {color}; text-align: center;">' \
+                            f'<div style="width: 100%; height: 100px;"></div>' \
+                            f'<div style="width: 100%; background: #fff; color: #000; font-size: 12px;">{color}</div>' \
+                            f'</div>'
+                color_boxes.append(color_box)
+
+            wrapped_color_boxes = wrapper_start + ''.join(color_boxes) + wrapper_end
+            st.markdown(wrapped_color_boxes, unsafe_allow_html=True)
