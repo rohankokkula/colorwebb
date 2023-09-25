@@ -3,7 +3,7 @@ import requests
 from bs4 import BeautifulSoup
 import re
 import webcolors
-from collections import defaultdict
+from collections import defaultdict, Counter
 
 def rgba_to_hex(rgba):
     return "#{:02x}{:02x}{:02x}".format(rgba[0], rgba[1], rgba[2]).lower()
@@ -58,9 +58,6 @@ def extract_external_styles(url):
     
     return color_counter
 
-st.title('Website Color Palette Extractor')
-
-url = st.text_input('Enter Website URL:')
 def is_greyscale(color):
     r, g, b = int(color[1:3], 16), int(color[3:5], 16), int(color[5:7], 16)
     return r == g == b
@@ -82,36 +79,34 @@ st.title('Website Color Palette Extractor')
 
 url = st.text_input('Enter Website URL:', key='url_input')
 
-
-def render_color_palette(color_counter):
-    st.write('Color Palette:')
-    wrapper_start = '<div style="display: flex; flex-wrap: wrap;">'
-    wrapper_end = '</div>'
-    color_boxes = []
-    # Sort the color_counter dictionary by frequency (values), in descending order.
-    sorted_colors = sorted(color_counter.items(), key=lambda x: x[1], reverse=True)
-
-    for color, count in sorted_colors:
-        color_box = f'''
-            <div style="flex: 1 1 calc(25% - 10px); margin: 5px; cursor: pointer;" onclick="navigator.clipboard.writeText('{color}')">
-                <div style="width: 100%; height: 100px; background: {color};"></div>
-                <div style="width: 100%; background: #fff; color: #000; font-size: 12px; text-align: center;">{color} ({count})</div>
-            </div>'''
-        color_boxes.append(color_box)
-
-    wrapped_color_boxes = wrapper_start + ''.join(color_boxes) + wrapper_end
-    st.markdown(wrapped_color_boxes, unsafe_allow_html=True)
-
-
 if url:
-    if st.button('Extract Colors',  key='extract_button'):
+    if st.button('Extract Colors', key='extract_button'):
         color_counter_internal = extract_inline_and_internal_styles(url)
         color_counter_external = extract_external_styles(url)
 
-        # Combine the internal and external color counters
         color_counter = color_counter_internal
         for color, count in color_counter_external.items():
             color_counter[color] += count
 
         if color_counter:
-            render_color_palette(color_counter)
+            primary, secondary, tertiary = identify_primary_secondary_colors(color_counter)
+            st.write(f'Primary Color: {primary}')
+            st.write(f'Secondary Colors: {", ".join(secondary) if secondary else "None"}')
+            st.write(f'Tertiary Colors: {", ".join(tertiary) if tertiary else "None"}')
+
+            wrapper_start = '<div style="display: flex; flex-wrap: wrap;">'
+            wrapper_end = '</div>'
+            color_boxes = []
+
+            sorted_colors = sorted(color_counter.items(), key=lambda x: x[1], reverse=True)
+            
+            for color, count in sorted_colors:
+                color_box = f'''
+                    <div style="flex: 1 1 calc(25% - 10px); margin: 5px; cursor: pointer;" onclick="navigator.clipboard.writeText('{color}')">
+                        <div style="width: 100%; height: 100px; background: {color};"></div>
+                        <div style="width: 100%; background: #fff; color: #000; font-size: 12px; text-align: center;">{color} ({count})</div>
+                    </div>'''
+                color_boxes.append(color_box)
+
+            wrapped_color_boxes = wrapper_start + ''.join(color_boxes) + wrapper_end
+            st.markdown(wrapped_color_boxes, unsafe_allow_html=True)
